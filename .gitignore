@@ -2,7 +2,6 @@ Gene_table.txt
 HERV_hiconf_table.txt
 unique-ambiguously_table.txt
 bibliography_AKIKO.bib
-Tokuyama_analysis.Rmd
 Akiko_GeneCount_Norm.txt
 DESeq_Akiko_ERVmap.txt
 ERVmap_count.txt
