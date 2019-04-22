@@ -54,13 +54,13 @@ cts_g <- as.matrix(read.delim("Gene_table.txt",row.names = 1))
 cts_h <- as.matrix(read.delim("HERV_hiconf_table.txt",row.names = 1))
 all<- round(rbind(cts_g,cts_h),0)
 info <- read.delim("unique-ambiguously_table.txt", row.names=1)
-coldata<-info[,c("Condition","Name","Plataform")]
+coldata<-info[,c("Condition","Name","Platform")]
 ann_colors <- list(Condition = c(SLE="red", Healthy="blue"),
-                   Plataform=c(HiSeq_2500='#F8766D',NextSeq_500='#00BFC4'))
+                   Platform=c(HiSeq_2500='#F8766D',NextSeq_500='#00BFC4'))
 teles_erv<-read.table("Telescope-ERVmap.txt",header = F)
 ```
 
-Gene Count and HERV counts were concatenated for each sample. A principal component analysis was perfomed on the data normalized without taking into account the sequencing plataform:
+Gene Count and HERV counts were concatenated for each sample. A principal component analysis was perfomed on the data normalized without taking into account the sequencing platform:
 
 PCA:
 
@@ -74,10 +74,10 @@ dds_v2 <- DESeqDataSetFromMatrix(countData = all,
 dds_Wald_effect_Condition2<-DESeq(dds_v2, fitType = "parametric")
 rld_v3 <- vst(dds_Wald_effect_Condition2, blind=TRUE,fitType = "parametric")
 PCA_LPI <- prcomp(t(assay(rld_v3)))
-ploting_PCA_LPI<-data.frame(PCA_LPI$x[,1:2],Plataform=coldata$Plataform,Condition=coldata$Condition)
+ploting_PCA_LPI<-data.frame(PCA_LPI$x[,1:2],Platform=coldata$Platform,Condition=coldata$Condition)
 percentVar<-round(100*summary(PCA_LPI)$importance[2,1:2],0)
 ggplot(data=ploting_PCA_LPI)+
-  geom_point(aes(x=PC1,y=PC2,colour=Plataform,shape=Condition),size=2)+
+  geom_point(aes(x=PC1,y=PC2,colour=Platform,shape=Condition),size=2)+
   xlab(paste0("PC1: ",percentVar[1],"% variance"))+
   ylab(paste0("PC2: ",percentVar[2],"% variance"))+
   coord_fixed(ratio=1.0)+
@@ -87,12 +87,12 @@ ggplot(data=ploting_PCA_LPI)+
 
 ![](Tokuyama_analysis_files/figure-markdown_github/PCA1-1.png)
 
-PCA shows a clear bias for sequencing plataform, therfore these paramater was used as a part of the model in the following analysis.
+PCA shows a clear bias for sequencing platform, therfore these paramater was used as a part of the model in the following analysis.
 
 ``` r
 dds_v1 <- DESeqDataSetFromMatrix(countData = all,
                                  colData = coldata,
-                                 design =~ Condition + Plataform)
+                                 design =~ Condition + Platform)
 dds_Wald_effect_Condition<-DESeq(dds_v1, fitType = "parametric")
 rld_v2 <- vst(dds_Wald_effect_Condition, blind=TRUE,fitType = "parametric")
 Tele_res<-results(dds_Wald_effect_Condition,name = "Condition_SLE_vs_Healthy")
@@ -117,7 +117,7 @@ The results presented here, with the same parameters and thresholds as Tokuyama,
 ``` r
 DE_telescope2<-rownames(Tele_res)[Tele_res$padj<0.05 & abs(Tele_res$log2FoldChange)>1& !is.na(Tele_res$padj)]
 pheatmap(assay(rld_v2)[DE_telescope2,],scale = "row",
-         annotation_col = data.frame(Condition=coldata[,1], Plataform=coldata[,3],row.names =colnames(assay(rld_v2))),
+         annotation_col = data.frame(Condition=coldata[,1], Platform=coldata[,3],row.names =colnames(assay(rld_v2))),
          show_rownames = T, color =colorRampPalette(c('blue','white','red'),space = "Lab")(50),
          border_color = NA, legend = T, legend_labels = "Z score",annotation_colors=ann_colors,
          cutree_rows=2,cutree_cols=2,
